@@ -1,8 +1,29 @@
-# Simple::Gcharts
+# Simple GCharts
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/simple/gcharts`. To experiment with that code, run `bin/console` for an interactive prompt.
+Create Google Charts in your views using ruby, with no Javascript required. This library
+will serialize your data andautomatically load any required charts packages, and render
+your charts for you. Requires jQuery.
 
-TODO: Delete this and the text above, and describe your gem
+## Example [PieChart](https://developers.google.com/chart/interactive/docs/gallery/piechart#example)
+
+```ruby
+class ActivitiesController < ActionController::Base
+  def graphs
+    @activities = {
+      'Work' => 11,
+      'Eat' => 2,
+      'Commute' => 2,
+      'Watch TV' => 2,
+      'Sleep' => 7
+    }
+  end
+end
+```
+
+```erb
+# views/activities/graphs.html.erb
+<%= google_chart :pie, ['Task', 'Hours per Day'], @activities.map { |k,v| [k, v] }, { title: 'My Daily Activities' } %>
+```
 
 ## Installation
 
@@ -20,20 +41,71 @@ Or install it yourself as:
 
     $ gem install simple-gcharts
 
+Add script to `application.js` (or appropriate page)
+
+```js
+//= require jquery
+//= require simple-gcharts
+```
+
 ## Usage
 
-TODO: Write usage instructions here
+See the [Google Charts Documentation](https://developers.google.com/chart) for chart type descriptions and options.
 
-## Development
+### google_chart
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```ruby
+def google_chart type, headers, data, opts={}, chart_id="chart-#{SecureRandom.hex(10)}", parent_tag=:div
+```
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+| Argument     | Description                                                                                                                                                                              |  
+| ----         | ----                                                                                                                                                                                     |  
+| `type`       | The type of chart (e.g. `:line`, see [below](#chart-types))                                                                                                                                    |  
+| `headers`    | The column data. Can be column name or object                                                                                                                                            |  
+| `data`       | A 2-D array of data rows. `headers` and `data` combined are passed to [`arrayToDataTable()`](https://developers.google.com/chart/interactive/docs/datatables_dataviews#arraytodatatable) |  
+| `opts`       | Options passed to `chart.draw()`                                                                                                                                                         |  
+| `chart_id`   | The HTML id attribute to use for the chart                                                                                                                                               |  
+| `parent_tag` | The tag used to wrap the child tags                                                                                                                                                      |  
 
-## Contributing
+Ruby can't make Javascript date objects, but fortunately Google Charts supports [an alternate syntax](https://developers.google.com/chart/interactive/docs/datesandtimes#dates-and-times-using-the-date-string-representation) for date and time datatypes. You can use `chart_date_format` to convert DateTime objects to the proper format. 
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/simple-gcharts. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+```ruby
+def chart_date_format(datetime, time=false)
+  if time
+    datetime.strftime "Date(%Y, %m, %d, %H, %M, %S)"
+  else
+    datetime.strftime "Date(%Y, %m, %d)"
+  end
+end
+```
 
+### Chart Types
+
+| Types        |  
+| ----         |  
+| :annotation  |  
+| :area        |  
+| :bubble      |  
+| :bar         |  
+| :calendar    |  
+| :candlestick |  
+| :column      |  
+| :combo       |  
+| :gantt       |  
+| :gauge       |  
+| :geochart    |  
+| :histogram   |  
+| :line        |  
+| :map         |  
+| :orgchart    |  
+| :pie         |  
+| :snakey      |  
+| :scatter     |  
+| :stepped     |  
+| :table       |  
+| :timeline    |  
+| :treemap     |  
+| :word        |  
 
 ## License
 
