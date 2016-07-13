@@ -8,10 +8,7 @@ module GoogleChartHelper
   end
 
   def chart_date_format(datetime, time=false)
-    if time
-      datetime.strftime "Date(%Y, %m, %d, %H, %M, %S)"
-    else
-      datetime.strftime "Date(%Y, %m, %d)"
-    end
+    # can't use strftime for month because stupid javascript zero-indexes months
+    datetime.strftime "Date(%Y, #{datetime.month - 1}, %d#{", %H, %M, %S" if time})"
   end
 end
