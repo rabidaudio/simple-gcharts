@@ -2,8 +2,6 @@
 //=require loader
 $(document).ready(function(){
 
-  console.log('setup charts');
-
   var TYPES = {
     annotation:  { package: 'annotationchart', name: 'AnnotationChart' },
     area:        { package: 'corechart',       name: 'AreaChart' },
@@ -36,10 +34,8 @@ $(document).ready(function(){
     ? $.getScript('https://www.google.com/jsapi')
     : $.Deferred().resolve().promise()
   ).then(function(){
-    console.log('load packages');
     google.charts.load('current', {'packages': $.unique(packages) });
     google.charts.setOnLoadCallback(function(){
-      console.log('create charts');
       // create charts
       $('.google-chart').each(function(){
         var type = $(this).attr('chart_type');
