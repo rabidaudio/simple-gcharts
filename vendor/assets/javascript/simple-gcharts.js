@@ -28,7 +28,20 @@
     word:        { package: 'wordtree',        name: 'WordTree' }
   };
 
+  function loadPackages(){
+    console.log('loadPackages');
+    var packages = $('.google-chart').map(function(){ return TYPES[$(this).attr('chart_type')].package; });
+    ( $.inArray('map', packages) >= 0 || $.inArray('geochart', packages) >= 0
+      ? $.getScript('https://www.google.com/jsapi')
+      : $.Deferred().resolve().promise()
+    ).then(function(){
+      google.charts.load('current', {'packages': $.unique(packages) });
+      google.charts.setOnLoadCallback(createCharts);
+    });
+  }
+
   function createCharts(){
+    console.log('createCharts');
     $('.google-chart').each(function(){
       var type = $(this).attr('chart_type');
       var data = $('script[chart='+$(this).attr('id')+']').text();
@@ -39,19 +52,6 @@
       }
     });
   }
-
-  $(document).on('ready', function(){
-    // load packages
-    var packages = $('.google-chart').map(function(){ return TYPES[$(this).attr('chart_type')].package; });
-    ( $.inArray('map', packages) >= 0 || $.inArray('geochart', packages) >= 0
-      ? $.getScript('https://www.google.com/jsapi')
-      : $.Deferred().resolve().promise()
-    ).then(function(){
-      google.charts.load('current', {'packages': $.unique(packages) });
-      google.charts.setOnLoadCallback(createCharts);
-    });
-  });
   
-  // support for turbolinks
-  $(document).on('page:load', createCharts);
+  $(document).on('ready', loadPackages);
 })(jQuery);
