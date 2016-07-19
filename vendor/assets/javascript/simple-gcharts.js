@@ -1,6 +1,6 @@
 //=require jquery
 //=require loader
-$(document).ready(function(){
+(function($){
 
   var TYPES = {
     annotation:  { package: 'annotationchart', name: 'AnnotationChart' },
@@ -28,24 +28,30 @@ $(document).ready(function(){
     word:        { package: 'wordtree',        name: 'WordTree' }
   };
 
-  // load packages
-  var packages = $('.google-chart').map(function(){ return TYPES[$(this).attr('chart_type')].package; });
-  ( $.inArray('map', packages) >= 0 || $.inArray('geochart', packages) >= 0
-    ? $.getScript('https://www.google.com/jsapi')
-    : $.Deferred().resolve().promise()
-  ).then(function(){
-    google.charts.load('current', {'packages': $.unique(packages) });
-    google.charts.setOnLoadCallback(function(){
-      // create charts
-      $('.google-chart').each(function(){
-        var type = $(this).attr('chart_type');
-        var data = $('script[chart='+$(this).attr('id')+']').text();
-        if(!!TYPES[type] && !!data){
-          var config = JSON.parse(data);
-          var chart = new google.visualization[TYPES[type].name](this);
-          chart.draw(google.visualization.arrayToDataTable(config.data), config.options);
-        }
-      });
+  function createCharts(){
+    $('.google-chart').each(function(){
+      var type = $(this).attr('chart_type');
+      var data = $('script[chart='+$(this).attr('id')+']').text();
+      if(!!TYPES[type] && !!data){
+        var config = JSON.parse(data);
+        var chart = new google.visualization[TYPES[type].name](this);
+        chart.draw(google.visualization.arrayToDataTable(config.data), config.options);
+      }
+    });
+  }
+
+  $(document).on('ready', function(){
+    // load packages
+    var packages = $('.google-chart').map(function(){ return TYPES[$(this).attr('chart_type')].package; });
+    ( $.inArray('map', packages) >= 0 || $.inArray('geochart', packages) >= 0
+      ? $.getScript('https://www.google.com/jsapi')
+      : $.Deferred().resolve().promise()
+    ).then(function(){
+      google.charts.load('current', {'packages': $.unique(packages) });
+      google.charts.setOnLoadCallback(createCharts);
     });
   });
-});
+  
+  // support for turbolinks
+  $(document).on('page:load', createCharts);
+})(jQuery);
